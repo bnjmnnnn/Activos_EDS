@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "inventario-estaciones",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-01-15",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "inventario-estaciones",
+      // Reemplazar por el database_id que entrega:
+      //   npx wrangler d1 create inventario-estaciones
+      "database_id": "352cd61d-517b-462a-9895-b8a92f5cf862"
+    }
+  ],
+  "observability": {
+    "enabled": true
+  }
+}

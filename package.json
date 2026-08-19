@@ -1,0 +1,24 @@
+{
+  "name": "inventario-estaciones",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Levantamiento de activos TI declarado por las estaciones de servicio",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 execute inventario-estaciones --local --file=./schema.sql",
+    "db:remoto": "wrangler d1 execute inventario-estaciones --remote --file=./schema.sql"
+  },
+  "dependencies": {
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241230.0",
+    "typescript": "^5.7.2",
+    "wrangler": "^3.99.0"
+  },
+  "allowScripts": {
+    "esbuild@0.17.19": true,
+    "workerd@1.20250718.0": true
+  }
+}

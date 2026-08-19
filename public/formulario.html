@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Declaración de activos · Estación</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+<div class="app">
+
+  <header class="barra-superior">
+    <div class="barra-interior">
+      <div class="marca">
+        <div class="logo">A</div>
+        <div>
+          <div class="titulo">Registro de Activos</div>
+          <div class="sub">Red de estaciones</div>
+        </div>
+      </div>
+      <div style="flex:1 1 auto"></div>
+      <div class="barra-usuario">
+        <div class="avatar estacion" id="avatar-estacion">··</div>
+        <div class="quien">
+          <div class="nombre" id="barra-estacion">—</div>
+          <div class="cargo">Personal de estación</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="cabecera-contenido">
+    <div class="cabecera-interior">
+      <div class="texto">
+        <div class="eyebrow">Estación</div>
+        <h1>Declaración de activos </h1>
+        <p>La estación confirma cuántas unidades tiene realmente de cada tipo de activo. Lo que se envíe aquí reemplaza al registro central.</p>
+      </div>
+    </div>
+  </div>
+
+  <main class="contenido">
+    <div id="cargando" class="vacio">Cargando…</div>
+
+    <section id="error-carga" class="centrado-tarjeta oculto">
+      <h2>No pudimos abrir el formulario</h2>
+      <p id="error-carga-texto"></p>
+      <p style="margin-top:14px">Si crees que es un error, escribe a Operaciones TI.</p>
+    </section>
+
+    <!-- Selección de estación -->
+    <section id="selector" class="centrado-tarjeta oculto">
+      <h2>¿En qué estación estás?</h2>
+      <p>Selecciona tu estación de servicio para empezar la declaración. Solo verás y declararás los activos de esa estación.</p>
+
+      <div class="combo" id="combo">
+        <button type="button" class="combo-boton" id="combo-boton" aria-haspopup="listbox" aria-expanded="false">
+          <span id="combo-texto" class="vacio-texto">Selecciona tu estación</span>
+          <span class="caret" id="combo-caret">▾</span>
+        </button>
+
+        <div class="combo-panel oculto" id="combo-panel" role="listbox">
+          <div class="combo-buscador">
+            <input type="text" id="combo-filtro" placeholder="Escribe para buscar tu estación…" autocomplete="off">
+          </div>
+          <div class="combo-lista" id="combo-lista"></div>
+        </div>
+      </div>
+    </section>
+
+    <form id="formulario" class="rejilla oculto" novalidate>
+
+      <!-- Estado del periodo -->
+      <section class="tarjeta completo">
+        <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between">
+          <div style="min-width:200px">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <span style="font-size:13px;font-weight:600">Declaración de <span id="nombre-estacion"></span></span>
+              <span class="mono" style="font-size:11.5px;color:var(--text-400)" id="codigo-estacion"></span>
+              <a href="#" id="cambiar-estacion" class="enlace-suave oculto">Cambiar estación</a>
+            </div>
+            <div style="font-size:12.5px;color:var(--text-600);margin-top:3px" id="linea-periodo"></div>
+          </div>
+          <div class="kpis-linea">
+            <div>
+              <div class="valor" id="kpi-progreso">0 / 0</div>
+              <div class="etiqueta">líneas confirmadas por ti</div>
+            </div>
+          </div>
+        </div>
+        <div class="barra-progreso"><div id="barra-progreso" style="width:0%"></div></div>
+      </section>
+
+      <!-- Tabla de declaración -->
+      <section class="tarjeta plana completo">
+        <div class="tabla-envoltura">
+          <table class="tabla declaracion">
+            <thead>
+              <tr>
+                <th>Activo</th>
+                <th class="centro">Cantidad que tienes</th>
+              </tr>
+            </thead>
+            <tbody id="lineas"></tbody>
+          </table>
+        </div>
+        <div class="pie-tabla">
+          <span id="ayuda-pie">Confirma cada línea para poder enviar la declaración.</span>
+          <div style="display:flex;gap:9px">
+            <button type="submit" class="boton primario chico" id="enviar">Enviar declaración</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Comentarios (opcional) -->
+      <section class="tarjeta completo">
+        <details class="plegable">
+          <summary>Comentarios <span style="font-weight:400;color:var(--text-400)">(opcional)</span></summary>
+          <div class="campo" style="margin-bottom:0">
+            <p class="ayuda">Equipos en falla, en bodega, instalados hace poco, o activos que no aparecen en la lista.</p>
+            <textarea id="comentarios" aria-label="Comentarios"></textarea>
+          </div>
+        </details>
+        <div class="aviso error oculto" id="error-envio" style="margin-top:14px"></div>
+      </section>
+    </form>
+
+    <!-- Confirmación -->
+    <section id="listo" class="centrado-tarjeta oculto">
+      <div class="exito-marca">✓</div>
+      <h2>Declaración recibida</h2>
+      <p id="listo-detalle"></p>
+      <div class="tarjeta plana" style="margin-top:18px">
+        <div class="tabla-envoltura">
+          <table class="tabla">
+            <thead><tr><th>Activo</th><th class="num">Cantidad declarada</th></tr></thead>
+            <tbody id="listo-resumen"></tbody>
+          </table>
+        </div>
+      </div>
+      <p style="margin-top:16px">
+        Si te equivocaste, puedes <a href="#" id="volver-enviar">volver a enviar el formulario</a>: guardamos siempre la última respuesta.
+      </p>
+    </section>
+  </main>
+
+  <p class="pie-pagina">Operaciones TI · Registro de activos de la red de estaciones.</p>
+</div>
+
+<script src="/formulario.js"></script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Administración · Registro de Activos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+
+<!-- Login -->
+<div id="login" class="modal-fondo oculto">
+  <form class="modal" id="form-login">
+    <h2>Registro de Activos</h2>
+    <p class="intro">Panel de Operaciones TI. Ingresa la clave de administración.</p>
+    <div class="campo">
+      <label for="password">Clave</label>
+      <input type="password" id="password" autocomplete="current-password" required>
+    </div>
+    <div class="aviso error oculto" id="error-login" style="margin-bottom:14px"></div>
+    <button type="submit" class="boton primario grande" style="width:100%">Entrar</button>
+  </form>
+</div>
+
+<div class="app">
+  <header class="barra-superior">
+    <div class="barra-interior">
+      <div class="marca">
+        <div class="logo">A</div>
+        <div>
+          <div class="titulo">Registro de Activos</div>
+          <div class="sub">Red de estaciones</div>
+        </div>
+      </div>
+
+      <nav class="nav-pestanas">
+        <button data-pestana="conciliacion" class="activa">Conciliación<span class="pastilla-nav" id="pastilla-diferencias"></span></button>
+        <button data-pestana="declaraciones">Declaraciones</button>
+        <button data-pestana="estaciones">Estaciones y links</button>
+        <button data-pestana="tipos">Tipos de activo</button>
+      </nav>
+
+      <div class="barra-usuario">
+        <div class="avatar admin">TI</div>
+        <div class="quien">
+          <div class="nombre">Operaciones TI</div>
+          <div class="cargo">Administrador</div>
+        </div>
+        <button class="boton secundario diminuto" id="salir">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="cabecera-contenido">
+    <div class="cabecera-interior">
+      <div class="texto">
+        <div class="eyebrow" id="crumb">Solo administrador</div>
+        <h1 id="titulo-pantalla">Conciliación de la red</h1>
+        <p id="subtitulo-pantalla">Importa el registro central y compara, estación por estación, lo que el sistema dice contra lo que la estación declara.</p>
+      </div>
+      <div class="acciones-cabecera" id="acciones-cabecera"></div>
+    </div>
+  </div>
+
+  <main class="contenido" id="panel" hidden>
+
+    <!-- ===================== CONCILIACIÓN ===================== -->
+    <section id="tab-conciliacion">
+      <div class="rejilla-kpi" id="kpis-conciliacion"></div>
+
+      <!-- Importación -->
+      <section class="tarjeta" style="margin-top:16px">
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between">
+          <div style="flex:1 1 280px;min-width:0">
+            <h2>Datos del sistema (importación Cotalker)</h2>
+            <p>Sube el archivo exportado de Cotalker (.csv, .xlsx) para actualizar la columna «Sistema». Las declaraciones de las estaciones no se sobrescriben: se recalculan las diferencias.</p>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span class="mono" style="font-size:11.5px;color:var(--text-400);white-space:nowrap" id="ultima-import">Sin importaciones</span>
+            <button class="boton primario" id="elegir-archivo">Subir archivo</button>
+          </div>
+        </div>
+
+        <label class="dropzone" id="zona-archivo">
+          <input type="file" id="archivo" accept=".csv,.tsv,.txt,.xlsx,.xlsm" hidden>
+          <div class="izquierda">
+            <div class="chip-csv">CSV</div>
+            <div style="min-width:0">
+              <div class="titulo" id="drop-titulo">Arrastra el archivo aquí o haz clic para seleccionarlo</div>
+              <div class="detalle" id="drop-detalle">Formatos admitidos: .csv, .xlsx · el archivo se lee en tu navegador</div>
+            </div>
+          </div>
+          <span class="badge gris" id="drop-badge">Sin archivo</span>
+        </label>
+
+        <div class="aviso oculto" id="resultado-carga" style="margin-top:14px"></div>
+
+        <!-- Mapeo -->
+        <div id="mapeo" class="oculto">
+          <div class="resumen-import" id="resumen-import"></div>
+
+          <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border-softer)">
+            <h2 style="font-size:13px">Dime qué es cada columna</h2>
+            <p style="margin-bottom:12px">Autodetecté lo que pude. Revisa y corrige antes de aplicar.</p>
+
+            <div class="rejilla-campos">
+              <div class="campo">
+                <label for="map-hoja">Hoja</label>
+                <select id="map-hoja"></select>
+              </div>
+              <div class="campo">
+                <label for="map-encabezado">Fila de encabezados</label>
+                <select id="map-encabezado"></select>
+              </div>
+              <div class="campo">
+                <label for="map-formato">Formato del archivo</label>
+                <select id="map-formato">
+                  <option value="ancho">Una fila por estación (una columna por tipo)</option>
+                  <option value="largo">Una fila por activo (se agrupan por estación)</option>
+                </select>
+              </div>
+              <div class="campo">
+                <label for="map-codigo">Columna del código de estación</label>
+                <select id="map-codigo"></select>
+              </div>
+            </div>
+
+            <div id="mapeo-ancho">
+              <div class="rejilla-campos" id="mapeo-tipos"></div>
+            </div>
+
+            <div id="mapeo-largo" class="oculto">
+              <div class="rejilla-campos">
+                <div class="campo">
+                  <label for="map-tipo-col">Columna que dice el tipo de activo</label>
+                  <select id="map-tipo-col"></select>
+                </div>
+                <div class="campo">
+                  <label for="map-cantidad-col">Columna de cantidad</label>
+                  <select id="map-cantidad-col"></select>
+                </div>
+              </div>
+              <div id="mapeo-valores"></div>
+            </div>
+          </div>
+
+          <div id="previsualizacion"></div>
+
+          <div class="acciones-derecha">
+            <button class="boton secundario chico" id="cancelar-carga">Descartar</button>
+            <button class="boton primario chico" id="confirmar-carga">Aplicar al registro</button>
+          </div>
+        </div>
+
+        <div class="mapeo-columnas" id="mapeo-resuelto"></div>
+      </section>
+
+      <div id="sin-referencia" class="aviso info oculto" style="margin-top:16px">
+        Todavía no has importado el registro de Cotalker. Sube el archivo de arriba para ver la conciliación.
+      </div>
+
+      <!-- Estado por estación -->
+      <section class="tarjeta plana" id="bloque-comparacion" style="margin-top:16px">
+        <div class="encabezado-tabla">
+          <h2>Estado de declaración por estación</h2>
+          <p>Cada estación confirma sus activos reales; aquí se ve la diferencia contra el registro central.</p>
+        </div>
+
+        <div class="barra-filtros" style="padding:0 20px 14px">
+          <label class="buscador">
+            <span>⌕</span>
+            <input type="text" id="buscar-comp" placeholder="Buscar estación, código o jefe de zona">
+          </label>
+          <div id="chips-cruce" style="display:flex;gap:9px;flex-wrap:wrap"></div>
+        </div>
+
+        <div class="tabla-envoltura">
+          <table class="tabla conciliacion con-borde-superior">
+            <thead id="cabecera-comparacion"></thead>
+            <tbody id="cuerpo-comparacion"></tbody>
+          </table>
+        </div>
+        <div class="pie-tabla">
+          <span id="pie-comparacion"></span>
+          <a class="boton secundario chico" href="/api/admin/export/comparacion.csv">Exportar conciliación</a>
+        </div>
+      </section>
+
+      <!-- Cargas previas -->
+      <section class="tarjeta plana" style="margin-top:16px">
+        <div class="encabezado-tabla">
+          <h2>Importaciones anteriores</h2>
+          <p>La conciliación siempre usa la importación más reciente.</p>
+        </div>
+        <div class="tabla-envoltura">
+          <table class="tabla con-borde-superior">
+            <thead>
+              <tr>
+                <th>Fecha</th><th>Archivo</th><th class="num">Filas</th>
+                <th class="num">Estaciones</th><th>Códigos sin match</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="cuerpo-cargas"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- ===================== DECLARACIONES ===================== -->
+    <section id="tab-declaraciones" class="oculto">
+      <div class="rejilla-kpi" id="kpis-declaraciones"></div>
+
+      <div class="barra-filtros" style="margin-top:16px">
+        <label class="buscador">
+          <span>⌕</span>
+          <input type="text" id="buscar" placeholder="Buscar estación, código o responsable">
+        </label>
+        <select id="filtro-zona" style="width:auto;flex:none"><option value="">Todas las zonas</option></select>
+        <div id="chips-estado" style="display:flex;gap:9px;flex-wrap:wrap"></div>
+      </div>
+
+      <section class="tarjeta plana">
+        <div class="tabla-envoltura">
+          <table class="tabla listado">
+            <thead id="cabecera-resumen"></thead>
+            <tbody id="cuerpo-resumen"></tbody>
+          </table>
+        </div>
+        <div class="pie-tabla">
+          <span id="conteo-filas"></span>
+          <div style="display:flex;gap:9px">
+            <a class="boton secundario chico" href="/api/admin/export/inventario.csv">Exportar inventario</a>
+            <a class="boton secundario chico" href="/api/admin/export/historial.csv">Exportar historial</a>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- ===================== ESTACIONES ===================== -->
+    <section id="tab-estaciones" class="oculto">
+      <section class="tarjeta">
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between">
+          <div style="flex:1 1 280px;min-width:0">
+            <h2>Cargar el listado de estaciones</h2>
+            <p>Sube el archivo con las estaciones (.xlsx o .csv). Las columnas pueden llamarse como sea —«UT cotalker», «EDS», lo que traiga tu export—: tú indicas cuál es cuál. Si el código ya existe se actualizan los datos y <strong>se conserva el link</strong>.</p>
+          </div>
+          <button class="boton primario" id="elegir-estaciones">Subir archivo</button>
+        </div>
+
+        <label class="dropzone" id="zona-estaciones">
+          <input type="file" id="archivo-estaciones" accept=".csv,.tsv,.txt,.xlsx,.xlsm" hidden>
+          <div class="izquierda">
+            <div class="chip-csv">CSV</div>
+            <div style="min-width:0">
+              <div class="titulo" id="drop-est-titulo">Arrastra el archivo aquí o haz clic para seleccionarlo</div>
+              <div class="detalle" id="drop-est-detalle">Formatos admitidos: .csv, .xlsx · el archivo se lee en tu navegador</div>
+            </div>
+          </div>
+          <span class="badge gris" id="drop-est-badge">Sin archivo</span>
+        </label>
+
+        <div class="aviso oculto" id="resultado-import" style="margin-top:14px"></div>
+
+        <div id="mapeo-est" class="oculto">
+          <div class="resumen-import" id="resumen-est"></div>
+
+          <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border-softer)">
+            <h2 style="font-size:13px">Dime qué es cada columna</h2>
+            <p style="margin-bottom:12px">Los dos primeros son obligatorios. El resto son opcionales: lo que no asignes, no se toca.</p>
+
+            <div class="rejilla-campos">
+              <div class="campo">
+                <label for="est-hoja">Hoja</label>
+                <select id="est-hoja"></select>
+              </div>
+              <div class="campo">
+                <label for="est-encabezado">Fila de encabezados</label>
+                <select id="est-encabezado"></select>
+              </div>
+              <div class="campo">
+                <label for="est-codigo">Código de estación <span class="obligatorio">*</span></label>
+                <select id="est-codigo"></select>
+                <p class="ayuda">El mismo identificador que usa Cotalker: es la llave del cruce.</p>
+              </div>
+              <div class="campo">
+                <label for="est-nombre">Nombre de la estación <span class="obligatorio">*</span></label>
+                <select id="est-nombre"></select>
+              </div>
+              <div class="campo">
+                <label for="est-zona">Zona</label>
+                <select id="est-zona"></select>
+              </div>
+              <div class="campo">
+                <label for="est-jefe">Jefe de zona</label>
+                <select id="est-jefe"></select>
+              </div>
+              <div class="campo">
+                <label for="est-email">Email del jefe</label>
+                <select id="est-email"></select>
+              </div>
+            </div>
+          </div>
+
+          <div id="previsualizacion-est"></div>
+
+          <div class="acciones-derecha">
+            <button class="boton secundario chico" id="cancelar-estaciones">Descartar</button>
+            <button class="boton primario chico" id="importar">Importar estaciones</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="tarjeta">
+        <h2>Agregar una estación</h2>
+        <div class="rejilla-campos" style="margin-top:14px">
+          <div class="campo"><label for="n-codigo">Código *</label><input type="text" id="n-codigo"></div>
+          <div class="campo"><label for="n-nombre">Nombre *</label><input type="text" id="n-nombre"></div>
+          <div class="campo"><label for="n-zona">Zona</label><input type="text" id="n-zona"></div>
+          <div class="campo"><label for="n-jefe">Jefe de zona</label><input type="text" id="n-jefe"></div>
+          <div class="campo"><label for="n-email">Email del jefe</label><input type="text" id="n-email"></div>
+        </div>
+        <div class="aviso oculto" id="resultado-crear"></div>
+        <div class="acciones-derecha"><button class="boton primario chico" id="crear-estacion">Agregar</button></div>
+      </section>
+
+      <section class="tarjeta plana">
+        <div class="encabezado-tabla" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end">
+          <div>
+            <h2>Estaciones cargadas</h2>
+            <p>Estas son las que aparecen en el desplegable del formulario. Puedes completar zona y jefe de zona escribiendo directo en la tabla.</p>
+          </div>
+          <div style="display:flex;gap:9px;flex-wrap:wrap">
+            <button class="boton secundario chico" id="copiar-link-general">Copiar link del formulario</button>
+            <a class="boton secundario chico" href="/api/admin/export/links.csv">Exportar links</a>
+          </div>
+        </div>
+        <div class="tabla-envoltura">
+          <table class="tabla listado con-borde-superior">
+            <thead>
+              <tr>
+                <th>Estación</th><th>Zona</th><th>Jefe de zona</th>
+                <th>Link</th><th>Declaración</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="cuerpo-estaciones"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+
+    <!-- ===================== TIPOS DE ACTIVO ===================== -->
+    <section id="tab-tipos" class="oculto">
+      <section class="tarjeta">
+        <h2>Agregar tipo de activo</h2>
+        <p>Aparece como una línea más en el formulario de todas las estaciones.</p>
+        <div class="rejilla-campos" style="margin-top:14px">
+          <div class="campo"><label for="t-nombre">Nombre</label><input type="text" id="t-nombre" placeholder="Ej: Dispensadores de combustible"></div>
+          <div class="campo"><label for="t-descripcion">Ayuda para la estación</label><input type="text" id="t-descripcion" placeholder="Opcional"></div>
+        </div>
+        <div class="aviso oculto" id="resultado-tipo"></div>
+        <div class="acciones-derecha"><button class="boton primario chico" id="crear-tipo">Agregar</button></div>
+      </section>
+
+      <section class="tarjeta plana">
+        <div class="tabla-envoltura">
+          <table class="tabla listado">
+            <thead>
+              <tr><th class="num">Orden</th><th>Nombre</th><th>Clave</th><th>Descripción</th><th>En el formulario</th><th>En conciliación</th></tr>
+            </thead>
+            <tbody id="cuerpo-tipos"></tbody>
+          </table>
+        </div>
+        <div class="pie-tabla">
+          <span>Desactivar un tipo lo saca del formulario pero conserva todo lo ya declarado. Sacarlo de la conciliación lo deja fuera de la comparación contra Cotalker, pero se sigue declarando y exportando normalmente.</span>
+        </div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<!-- Historial -->
+<div id="modal-historial" class="modal-fondo oculto">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px">
+      <h2 id="historial-titulo" style="margin:0"></h2>
+      <button class="boton secundario diminuto" id="cerrar-historial">Cerrar</button>
+    </div>
+    <div id="historial-contenido"></div>
+  </div>
+</div>
+
+<script src="/lector-planilla.js"></script>
+<script src="/admin.js"></script>
+</body>
+</html>

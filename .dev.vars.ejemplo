@@ -1,0 +1,7 @@
+# Copiar este archivo como `.dev.vars` para desarrollo local (no se sube a git).
+# En producción estos valores se cargan con:
+#   npx wrangler secret put ADMIN_PASSWORD
+#   npx wrangler secret put SESSION_SECRET
+
+ADMIN_PASSWORD=cambiar-esta-clave
+SESSION_SECRET=una-cadena-larga-y-aleatoria-cualquiera
